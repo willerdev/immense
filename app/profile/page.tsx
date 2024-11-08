@@ -5,6 +5,9 @@ import {
   Bell, HelpCircle, User as UserIcon, ChevronRight 
 } from 'lucide-react';
 import Image from 'next/image';
+import { useAuthStore } from '@/lib/store';
+import { signOut } from '@/lib/actions/auth';
+import { useRouter } from 'next/navigation';
 
 const menuItems = [
   {
@@ -30,29 +33,43 @@ const menuItems = [
     icon: Settings,
     label: 'Settings',
   },
-  {
-    icon: LogOut,
-    label: 'Log Out',
-    danger: true,
-  },
 ];
 
 export default function ProfilePage() {
+  const { user } = useAuthStore();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/login');
+  };
+
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <header className="bg-primary text-primary-foreground p-6">
         <div className="flex items-center gap-4">
           <div className="relative w-16 h-16 rounded-full overflow-hidden bg-primary-foreground/10">
-            <Image
-              src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"
-              alt="Profile"
-              fill
-              className="object-cover"
-            />
+            {user.photoURL ? (
+              <Image
+                src={user.photoURL}
+                alt={user.displayName || 'Profile'}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-2xl font-bold">
+                {user.displayName ? user.displayName[0].toUpperCase() : 'U'}
+              </div>
+            )}
           </div>
           <div>
-            <h1 className="text-xl font-bold">John Doe</h1>
-            <p className="text-primary-foreground/80">john.doe@example.com</p>
+            <h1 className="text-xl font-bold">{user.displayName || 'User'}</h1>
+            <p className="text-primary-foreground/80">{user.email}</p>
           </div>
         </div>
       </header>
@@ -64,9 +81,7 @@ export default function ProfilePage() {
             return (
               <button
                 key={item.label}
-                className={`w-full flex items-center justify-between p-4 ${
-                  item.danger ? 'text-destructive' : ''
-                }`}
+                className="w-full flex items-center justify-between p-4"
               >
                 <div className="flex items-center gap-3">
                   <Icon className="w-5 h-5" />
@@ -83,6 +98,16 @@ export default function ProfilePage() {
               </button>
             );
           })}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-between p-4 text-destructive"
+          >
+            <div className="flex items-center gap-3">
+              <LogOut className="w-5 h-5" />
+              <span>Log Out</span>
+            </div>
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
 
         <div className="bg-card rounded-lg border p-4">
@@ -99,6 +124,28 @@ export default function ProfilePage() {
             <button className="text-sm text-primary font-medium">
               View Benefits
             </button>
+          </div>
+        </div>
+
+        <div className="bg-card rounded-lg border p-4 space-y-4">
+          <h2 className="font-semibold">Account Information</h2>
+          <div className="space-y-2">
+            <div>
+              <p className="text-sm text-muted-foreground">Email</p>
+              <p className="font-medium">{user.email}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Account Created</p>
+              <p className="font-medium">
+                {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'N/A'}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Last Sign In</p>
+              <p className="font-medium">
+                {user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleDateString() : 'N/A'}
+              </p>
+            </div>
           </div>
         </div>
       </main>

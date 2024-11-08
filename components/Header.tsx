@@ -1,3 +1,5 @@
+"use client";
+
 import { MapPin, Bell, ShoppingCart, User, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/store';

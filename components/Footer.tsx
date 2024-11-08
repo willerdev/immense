@@ -1,4 +1,7 @@
+"use client";
+
 import Link from 'next/link';
+import { Home, LayoutGrid, ShoppingCart, Heart, User } from 'lucide-react';
 
 export default function Footer() {
   return (
